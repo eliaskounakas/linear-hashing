@@ -22,17 +22,21 @@ public:
   using key_equal = std::equal_to<key_type>;                       // Hashing
   using hasher = std::hash<key_type>;                              // Hashing
 private:
-  struct Entry {
-    
-  }
+
   struct Bucket {
     size_type sz{0};
     key_type values[N];
-    const key_type* add(const key_type& key) {
-      if (sz == N) return nullptr;
-      values[sz] = key;
-      return &values[sz++]
-    }
+
+    const key_type* add(const key_type& key) {}
+    const key_type* search(const key_type& key);
+  }
+  
+  struct Dir {
+    size_type sz{0}
+    Bucket *buckets;
+
+    const key_type* add(const key_type& key);
+    const key_type* search(const key_type& key);
   }
 public:
   ADS_set();                                     // PH1
