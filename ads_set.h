@@ -22,6 +22,18 @@ public:
   using key_equal = std::equal_to<key_type>;                       // Hashing
   using hasher = std::hash<key_type>;                              // Hashing
 private:
+  struct Entry {
+    
+  }
+  struct Bucket {
+    size_type sz{0};
+    key_type values[N];
+    const key_type* add(const key_type& key) {
+      if (sz == N) return nullptr;
+      values[sz] = key;
+      return &values[sz++]
+    }
+  }
 public:
   ADS_set();                                     // PH1
   ADS_set(std::initializer_list<key_type> ilist);                      // PH1
