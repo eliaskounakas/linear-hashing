@@ -1,12 +1,31 @@
 #include<iostream>
-#include"ads_set.h"
+#include"ADS_set.h"
 #include<vector>
 using namespace std;
 
 int main() {
-  vector<int> vec {39, 38, 37, 31, 36, 32, 35, 33, 17};
+  ADS_set<int, 2> mySet = ADS_set<int, 2>();
 
-  ADS_set<int, 2> set = ADS_set<int, 2>();
-  set.insert(vec.begin(), vec.end());
-  set.dump(cout);
+
+
+  while (true) {
+    mySet.dump();
+    vector<int> inpv;
+    string inp;
+    cin >> inp;
+    switch (stoi(inp)) {
+      case 1:
+        cin >> inp;
+        cout << inp << (mySet.count(stoi(inp)) ? " EXISTS" : " DOESNT EXIST") << "\n";
+        break;
+      case 2:
+        cin >> inp;
+        inpv.push_back(stoi(inp));
+        mySet.insert(inpv.begin(), inpv.end());
+        break;
+      default:
+        break;
+    }
+  } 
+
 }

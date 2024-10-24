@@ -1,0 +1,32 @@
+
+new
+size
+empty
+count
+find
+erase
+iterator
+rinsert 10000 666
+size
+empty
+count
+find
+iterator
+riinsert 10000 4711
+size
+empty
+count
+find
+iterator
+rerase 10000 666
+size
+empty
+count
+find
+iterator
+rerase 10000 4711
+size
+empty
+count
+find
+iterator

@@ -1,0 +1,36 @@
+
+simpletest 20230523
+
+simpletest> 
+simpletest> 
+simpletest>  0
+simpletest>  true
+simpletest> 
+simpletest> find? ERROR - try 'help'
+simpletest> erase? ERROR - try 'help'
+simpletest> iterator? ERROR - try 'help'
+simpletest> rinsert? ERROR - try 'help'
+simpletest>  0
+simpletest>  true
+simpletest> 
+simpletest> find? ERROR - try 'help'
+simpletest> iterator? ERROR - try 'help'
+simpletest> 
+simpletest>  10000
+simpletest>  false
+simpletest> 
+simpletest> find? ERROR - try 'help'
+simpletest> iterator? ERROR - try 'help'
+simpletest> rerase? ERROR - try 'help'
+simpletest>  10000
+simpletest>  false
+simpletest> 
+simpletest> find? ERROR - try 'help'
+simpletest> iterator? ERROR - try 'help'
+simpletest> rerase? ERROR - try 'help'
+simpletest>  10000
+simpletest>  false
+simpletest> 
+simpletest> find? ERROR - try 'help'
+simpletest> iterator? ERROR - try 'help'
+simpletest> 

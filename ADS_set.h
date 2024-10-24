@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <bitset>
 
-template <typename Key, size_t N = 3>
+template <typename Key, size_t N = 7>
 class ADS_set {
 public:
   //class /* iterator type (implementation-defined) */;
@@ -32,8 +32,10 @@ public:
     hashTable.buckets[0] = new Bucket;
     hashTable.buckets[1] = new Bucket;
   }                         // PH1
-  ADS_set(std::initializer_list<key_type> ilist);                   // PH1
-  template<typename InputIt> ADS_set(InputIt first, InputIt last);     // PH1
+  ADS_set(std::initializer_list<key_type> ilist): ADS_set{std::begin(ilist),std::end(ilist)} {}                   // PH1
+  template<typename InputIt> ADS_set(InputIt first, InputIt last): ADS_set{} {
+    insert(first, last);
+  }     // PH1
   //ADS_set(const ADS_set &other);
 
   //~ADS_set() {}
@@ -53,11 +55,14 @@ public:
     insert(std::begin(ilist),std::end(ilist));
   }                  // PH1
 
+
   //std::pair<iterator,bool> insert(const key_type &key);
 
   template<typename InputIt> void insert(InputIt first, InputIt last) {
     for (InputIt it {first}; it != last; it++) {
-      hashTable.insert(*it);
+      const key_type& key = *it;
+      if (count(key)) return;
+      hashTable.insert(key);
       numOfElements++;
     }
   }
@@ -65,7 +70,15 @@ public:
   // void clear();
   // size_type erase(const key_type &key);
 
-  size_type count(const key_type &key) const;                          // PH1
+  size_type count(const key_type &key) const {
+    unsigned index = hashTable.getIndex(key);
+    for (Bucket* b{hashTable.buckets[index]}; b != nullptr; b = b->nextBucket) {
+      for (size_type i = 0; i < b->bucketSize; ++i) {
+        if (key_equal{}(b->entries[i], key)) return 1;
+      }
+    }
+    return 0;
+  }                       // PH1
   // iterator find(const key_type &key) const;
 
   // void swap(ADS_set &other);
@@ -76,16 +89,22 @@ public:
   void dump(std::ostream &o = std::cerr) const {
     for (size_type i{0}; i < hashTable.tableSize; i++) {
       std::string index{std::bitset<64>( i ).to_string()};
-      if (i < hashTable.nextToSplit || i > hashTable.roundNumber + hashTable.nextToSplit) 
+      if (i < hashTable.nextToSplit || i > hashTable.tableSize - hashTable.nextToSplit - 1) 
         index = index.substr(index.size() - (hashTable.roundNumber + 1));
       else index = ' ' + index.substr(index.size() - hashTable.roundNumber);
-
       o << index << " : ";
-      Bucket currentBucket = *hashTable.buckets[i];
-      currentBucket.print(o);
+
+      Bucket* b{hashTable.buckets[i]};
+      while (b != nullptr) {
+        for (size_type j{0}; j < b->bucketSize; j++) {
+          o << b->entries[j] << ' ';
+        } 
+        b = b->nextBucket;
+        if (b != nullptr) o << "-> ";
+      }
+
       o << "\n";
     }
-
   }
 
   // friend bool operator==(const ADS_set &lhs, const ADS_set &rhs);
@@ -98,7 +117,7 @@ template <typename Key, size_t N>
 struct ADS_set<Key, N>::Bucket {
   size_type bucketSize{0};
   size_type bucketMaxSize{N};
-  key_type entries[N];
+  key_type entries[N]{};
   Bucket* nextBucket{nullptr};
 
   bool append(key_type key) {
@@ -113,19 +132,6 @@ struct ADS_set<Key, N>::Bucket {
     entries[bucketSize] = key;
     bucketSize++;
     return false;
-  }
-
-  std::ostream& print(std::ostream &o = std::cout) {
-    for (size_type j{0}; j < bucketSize; j++) {
-      o << entries[j] << ' ';
-    } 
-
-    if (nextBucket != nullptr) {
-      o << "-> ";
-      return (*nextBucket).print(o);
-    }
-
-    return o;
   }
 };
 
@@ -145,14 +151,14 @@ struct ADS_set<Key, N>::HashTable {
     delete currentBucket;
   }
 
-  unsigned getLastNBits(key_type key, size_type n) {
+  unsigned getLastNBits(key_type key, size_type n) const {
     unsigned hashedValue = static_cast<unsigned>(hasher{}(key));
     unsigned mask = (1 << n) - 1;
     unsigned last_n_bits = hashedValue & mask;
     return last_n_bits;
   }
 
-  unsigned getIndex(key_type key) {
+  unsigned getIndex(const key_type& key) const {
     unsigned index = getLastNBits(key, roundNumber);
     if (index < nextToSplit) index = getLastNBits(key, roundNumber+1);
     return index;
@@ -174,7 +180,7 @@ struct ADS_set<Key, N>::HashTable {
     delete[] buckets;
     buckets = newBuckets;
 
-    //Kopiere alle Werte aus dem Bucket(s), der gesplittet werden soll, um sie neu zu hashen.
+    //Kopiere alle Werte aus dem Bucket, der gesplittet werden soll, um sie neu zu hashen.
     size_type splitEntriesCount{0};
     for (Bucket* b{buckets[nextToSplit]}; b != nullptr; b = b->nextBucket) {
       splitEntriesCount += b->bucketSize;
@@ -194,16 +200,18 @@ struct ADS_set<Key, N>::HashTable {
     deleteLinkedBuckets(buckets[nextToSplit]);
     buckets[nextToSplit] = new Bucket;
 
+    nextToSplit++;
+    if(nextToSplit == static_cast<size_type>(1 << roundNumber)) { 
+      roundNumber++; 
+      nextToSplit = 0; 
+    }
+
     for (size_type i = 0; i < splitEntriesCount; ++i) {
       unsigned index = getIndex(splitEntries[i]);
       (*buckets[index]).append(splitEntries[i]);
     }
-    
-    nextToSplit++;
-    if(nextToSplit == 1 << roundNumber) { 
-      roundNumber++; 
-      nextToSplit = 0; 
-    }
+  
+
     delete[] splitEntries;
   }
 
