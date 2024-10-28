@@ -189,7 +189,6 @@ struct ADS_set<Key, N>::HashTable {
     key_type* splitEntries = new key_type[splitEntriesCount];
     size_type count{0};
 
-    //Ist zwar eine nested Loop, aber die maximale Laufzeit ist O(n) * O(N) = O(n), weil es maximal N Werte in einem Bucket gibt!
     for (Bucket* b{buckets[nextToSplit]}; b != nullptr; b = b->nextBucket) {
       for (size_type i = 0; i < b->bucketSize; ++i) {
         splitEntries[count] = b->entries[i];
