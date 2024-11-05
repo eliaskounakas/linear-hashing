@@ -61,7 +61,7 @@ public:
   template<typename InputIt> void insert(InputIt first, InputIt last) {
     for (InputIt it {first}; it != last; it++) {
       const key_type& key = *it;
-      if (count(key)) return;
+      if (count(key) != 0) return;
       hashTable.insert(key);
       numOfElements++;
     }
@@ -166,7 +166,7 @@ struct ADS_set<Key, N>::HashTable {
 
   void insert(key_type key) {
       unsigned index = getIndex(key);
-      bool overflow = (*buckets[index]).append(key);
+      bool overflow = buckets[index]->append(key);
       if (overflow) split();
   }
 
@@ -207,7 +207,7 @@ struct ADS_set<Key, N>::HashTable {
 
     for (size_type i = 0; i < splitEntriesCount; ++i) {
       unsigned index = getIndex(splitEntries[i]);
-      (*buckets[index]).append(splitEntries[i]);
+      buckets[index]->append(splitEntries[i]);
     }
   
 
