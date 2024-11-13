@@ -61,7 +61,7 @@ public:
   template<typename InputIt> void insert(InputIt first, InputIt last) {
     for (InputIt it {first}; it != last; it++) {
       const key_type& key = *it;
-      if (count(key) != 0) return;
+      if (count(key) != 0) continue;
       hashTable.insert(key);
       numOfElements++;
     }
