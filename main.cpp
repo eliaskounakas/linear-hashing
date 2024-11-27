@@ -1,12 +1,15 @@
 #include<iostream>
+#include<random>
+#include<algorithm>
 #include"ADS_set.h"
 #include<vector>
+#include <bits/stl_algo.h>
 using namespace std;
 
 int main() {
-  ADS_set<int, 2> mySet = ADS_set<int, 2>();
 
-
+  ADS_set<int, 2> mySet;
+  
 
   // while (true) {
   //   mySet.dump();
@@ -34,10 +37,11 @@ int main() {
   //   cout << "\n";
   // } 
 
-  for(int i = 1; i < 30; i = i *2) {
+  for(int i = 1; i < 15; i++) {
     vector<int> inpv;
     inpv.push_back(i);
     mySet.insert(inpv.begin(), inpv.end());
+      mySet.dump();
   }
 
   cout << "\nTest Iterator: ";
@@ -46,6 +50,7 @@ int main() {
   });
   cout << "\n\n";
 
-  mySet.erase(8);
-  mySet.dump();
+  mySet.insert(1024);
+
+
 }

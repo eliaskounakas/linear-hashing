@@ -75,6 +75,7 @@ public:
 
     if (existingIt == end()) {
       hashTable.insert(key);
+      numOfElements++;
       return std::make_pair(find(key), true);
     }
     
@@ -172,15 +173,13 @@ public:
 
   friend bool operator==(const ADS_set &lhs, const ADS_set &rhs) {
     if (lhs.numOfElements != rhs.numOfElements) return false;
-    bool elementNotFound {false};
     for (const auto& key : lhs) {
       if (!rhs.count(key)) {
-        elementNotFound = true;
         return false;
       }
-      return true;
     };
-    return elementNotFound;
+
+    return true;
   }
 
   friend bool operator!=(const ADS_set &lhs, const ADS_set &rhs) {
@@ -288,47 +287,37 @@ struct ADS_set<Key, N>::HashTable {
 
   void split() {
     Bucket** newBuckets = new Bucket*[tableSize + 1];
-    for (size_type i{0}; i < tableSize; i++) {
-      newBuckets[i] = buckets[i];
-    }
-    
+    std::copy(buckets, buckets + tableSize, newBuckets);
     newBuckets[tableSize] = new Bucket;
     tableSize++;
     delete[] buckets;
     buckets = newBuckets;
 
-    //Kopiere alle Werte aus dem Bucket, der gesplittet werden soll, um sie neu zu hashen.
-    size_type splitEntriesCount{0};
-    for (Bucket* b{buckets[nextToSplit]}; b != nullptr; b = b->nextBucket) {
-      splitEntriesCount += b->bucketSize;
-    }
+    Bucket* oldBucket = new Bucket;
 
-    key_type* splitEntries = new key_type[splitEntriesCount];
-    size_type count{0};
 
-    for (Bucket* b{buckets[nextToSplit]}; b != nullptr; b = b->nextBucket) {
+    nextToSplit++;
+    for (Bucket* b{buckets[nextToSplit-1]}; b != nullptr; b = b->nextBucket) {
       for (size_type i = 0; i < b->bucketSize; ++i) {
-        splitEntries[count] = b->entries[i];
-        count++;
+        key_type entry = b->entries[i];
+        unsigned index = getIndex(entry);
+
+        if (index == nextToSplit-1) {
+          oldBucket->append(entry);
+        } else {
+          buckets[index]->append(entry);
+        }
       }
     }
 
-    deleteLinkedBuckets(buckets[nextToSplit]);
-    buckets[nextToSplit] = new Bucket;
+    deleteLinkedBuckets(buckets[nextToSplit-1]);
+    buckets[nextToSplit-1] = oldBucket;
 
-    nextToSplit++;
+
     if(nextToSplit == static_cast<size_type>(1 << roundNumber)) { 
       roundNumber++; 
       nextToSplit = 0; 
     }
-
-    for (size_type i = 0; i < splitEntriesCount; ++i) {
-      unsigned index = getIndex(splitEntries[i]);
-      buckets[index]->append(splitEntries[i]);
-    }
-  
-
-    delete[] splitEntries;
   }
 
   ~HashTable() {
