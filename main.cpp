@@ -41,7 +41,7 @@ int main() {
     vector<int> inpv;
     inpv.push_back(i);
     mySet.insert(inpv.begin(), inpv.end());
-      mySet.dump();
+
   }
 
   cout << "\nTest Iterator: ";
@@ -50,9 +50,6 @@ int main() {
   });
   cout << "\n\n";
 
-  mySet.erase(23);
 
-  mySet.insert(1024);
-
-
+  mySet.dump();
 }
