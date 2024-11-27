@@ -37,7 +37,7 @@ int main() {
   //   cout << "\n";
   // } 
 
-  for(int i = 1; i < 15; i++) {
+  for(int i = 1; i < 50; i++) {
     vector<int> inpv;
     inpv.push_back(i);
     mySet.insert(inpv.begin(), inpv.end());
@@ -49,6 +49,8 @@ int main() {
     cout << number << " ";
   });
   cout << "\n\n";
+
+  mySet.erase(23);
 
   mySet.insert(1024);
 

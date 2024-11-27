@@ -518,7 +518,6 @@ in 2
 
 === test_find_iter ===
 fi 0
-fi 8
 fi 9
 fi 1
 fi 2
@@ -527,6 +526,7 @@ fi 4
 fi 5
 fi 6
 fi 7
+fi 8
 
 a2
 === test_insert_it_erase ===
@@ -669,7 +669,6 @@ in 10
 
 === test_find_iter ===
 fi 0
-fi 9
 fi 1
 fi 2
 fi 10
@@ -679,6 +678,7 @@ fi 5
 fi 6
 fi 7
 fi 8
+fi 9
 
 === test_find_iter ===
 fi 0
@@ -6956,7 +6956,6 @@ fi 20
 fi 36
 fi 5
 fi 6
-fi 47
 fi 7
 fi 24
 fi 42
@@ -6966,6 +6965,7 @@ fi 28
 fi 29
 fi 13
 fi 46
+fi 47
 
 a2
 === test_insert_it_erase ===
@@ -10969,7 +10969,6 @@ fi 53
 
 === test_find_iter ===
 fi 0
-fi 33
 fi 65
 fi 34
 fi 2
@@ -11006,6 +11005,7 @@ fi 29
 fi 61
 fi 62
 fi 32
+fi 33
 
 ----
 
@@ -24288,7 +24288,6 @@ fi 4
 fi 5
 fi 6
 fi 7
-fi 40
 fi 8
 fi 9
 fi 41
@@ -24332,6 +24331,7 @@ fi 35
 fi 37
 fi 38
 fi 39
+fi 40
 
 ----
 
@@ -31152,7 +31152,6 @@ fi 9
 fi 73
 fi 10
 fi 74
-fi 43
 fi 75
 fi 12
 fi 76
@@ -31187,6 +31186,7 @@ fi 31
 fi 63
 fi 34
 fi 35
+fi 43
 
 === test_find_iter ===
 fi 64
@@ -74897,7 +74897,6 @@ fi 74
 fi 10
 fi 75
 fi 11
-fi 44
 fi 76
 fi 77
 fi 13
@@ -74935,6 +74934,7 @@ fi 37
 fi 39
 fi 42
 fi 43
+fi 44
 
 a2
 === test_insert_it_erase ===
@@ -75429,7 +75429,6 @@ fi 89
 fi 25
 fi 26
 fi 90
-fi 59
 fi 27
 fi 60
 fi 28
@@ -75458,6 +75457,7 @@ fi 53
 fi 54
 fi 55
 fi 57
+fi 59
 
 === test_find_iter ===
 fi 64
@@ -105040,7 +105040,6 @@ fi 8
 fi 9
 fi 10
 fi 11
-fi 75
 fi 12
 fi 14
 fi 78
@@ -105111,6 +105110,7 @@ fi 69
 fi 70
 fi 72
 fi 74
+fi 75
 
 ----
 
@@ -276192,4 +276192,22 @@ cl
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 === stresstest1 ===
-[stresstest1] timeout: exceeded 100s timeframe.
+elapsed_insert = 166.583 ms
+elapsed_count  = 11.7907 ms
+
+=== stresstest2 ===
+elapsed_insert = 143.237 ms
+elapsed_count  = 11.6853 ms
+elapsed_find   = 15.9904 ms
+elapsed_iter   = 30.1025 ms
+elapsed_erase  = 31.821 ms
+
+=== stresstest1 (randomized) ===
+elapsed_insert = 486.766 ms
+elapsed_count  = 99.0244 ms
+
+=== stresstest2 (randomized) ===
+elapsed_insert = 505.698 ms
+elapsed_count  = 89.5236 ms
+elapsed_find   = 123.929 ms
+elapsed_erase  = 304.518 ms

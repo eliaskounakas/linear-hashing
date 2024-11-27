@@ -28,8 +28,9 @@ private:
   HashTable hashTable;
   size_type numOfElements;
 public:
-  ADS_set(): hashTable{new Bucket*[1]}, numOfElements{0} {
+  ADS_set(): hashTable{new Bucket*[4]}, numOfElements{0} {
     hashTable.buckets[0] = new Bucket;
+    hashTable.buckets[1] = new Bucket;
   }                         // PH1
 
   ADS_set(std::initializer_list<key_type> ilist): ADS_set{std::begin(ilist),std::end(ilist)} {}                   // PH1
@@ -138,6 +139,7 @@ public:
     std::swap(hashTable.nextToSplit, other.hashTable.nextToSplit);
     std::swap(hashTable.roundNumber, other.hashTable.roundNumber);
     std::swap(hashTable.tableSize, other.hashTable.tableSize);
+    std::swap(hashTable.maxSize, other.hashTable.maxSize);
     std::swap(numOfElements, other.numOfElements);
   }
 
@@ -150,6 +152,11 @@ public:
 
   void dump(std::ostream &o = std::cerr) const {
     o << "[size = " << this->size() << "]\n";
+    o << "[table_size = " << hashTable.tableSize << "]\n";
+    o << "[round_number = " << hashTable.roundNumber << "]\n";
+    o << "[nextToSplit = " << hashTable.nextToSplit << "]\n";
+    o << "[maxSize = " << hashTable.maxSize<< "]\n";
+
     for (size_type i{0}; i < hashTable.tableSize; i++) {
 
       std::string index{std::bitset<64>( i ).to_string()};
@@ -198,7 +205,13 @@ struct ADS_set<Key, N>::Bucket {
 
   bool append(key_type key) {
     if (bucketSize == bucketMaxSize) {
-      if (nextBucket != nullptr) return (*nextBucket).append(key);
+      if (nextBucket != nullptr) {
+        Bucket* b = nextBucket;
+        while (b->nextBucket != nullptr) {
+          b = b->nextBucket;
+        }
+        return b->append(key);
+      };
 
       nextBucket = new Bucket;
       (*nextBucket).append(key);
@@ -215,8 +228,9 @@ struct ADS_set<Key, N>::Bucket {
 template <typename Key, size_t N>
 struct ADS_set<Key, N>::HashTable {
   Bucket** buckets{nullptr};
-  size_type tableSize{1};
-  size_type roundNumber{0};
+  size_type tableSize{2};
+  size_type maxSize{4};
+  size_type roundNumber{1};
   size_type nextToSplit{0};
 
   void deleteLinkedBuckets(Bucket* currentBucket) {
@@ -247,56 +261,49 @@ struct ADS_set<Key, N>::HashTable {
   }
 
   bool erase(key_type key) {
-    size_type rowEntries{0};
     bool foundKey {false};
     unsigned index = getIndex(key);
-    for (Bucket* b{buckets[index]}; b != nullptr; b = b->nextBucket) {
-      rowEntries += b->bucketSize;
-    }
 
-    key_type* row = new key_type[rowEntries];
-    size_type count{0};
-
+    Bucket* newBucket = new Bucket;
     for (Bucket* b{buckets[index]}; b != nullptr; b = b->nextBucket) {
       for (size_type i = 0; i < b->bucketSize; ++i) {
-        if (key_equal{}(b->entries[i], key)) foundKey = true;
-        row[count] = b->entries[i];
-        count++;
+        if (key_equal{}(b->entries[i], key)) {
+          foundKey = true;
+        } else {  
+          newBucket->append(b->entries[i]);
+        }
       }
     }
 
     if (!foundKey) {
-      delete[] row;
+      delete newBucket;
       return false;
-    }
-
-    Bucket* newBucket = new Bucket;
-
-    for (size_type i = 0; i < rowEntries; ++i) {
-      if (key_equal{}(row[i], key)) continue;
-      else newBucket->append(row[i]); 
     }
   
     deleteLinkedBuckets(buckets[index]);
-    delete[] row;
-
     buckets[index] = newBucket;
 
     return true;
   }
 
   void split() {
-    Bucket** newBuckets = new Bucket*[tableSize + 1];
-    std::copy(buckets, buckets + tableSize, newBuckets);
-    newBuckets[tableSize] = new Bucket;
+    if (tableSize == maxSize) {
+      maxSize = 1u << (roundNumber+2);
+      Bucket** newBuckets = new Bucket*[maxSize];
+
+      for (size_type i{0}; i < tableSize; i++) {
+        newBuckets[i] = buckets[i];
+      }
+
+      delete[] buckets;
+      buckets = newBuckets;
+    } 
+
+    buckets[tableSize] = new Bucket;
     tableSize++;
-    delete[] buckets;
-    buckets = newBuckets;
-
     Bucket* oldBucket = new Bucket;
-
-
     nextToSplit++;
+
     for (Bucket* b{buckets[nextToSplit-1]}; b != nullptr; b = b->nextBucket) {
       for (size_type i = 0; i < b->bucketSize; ++i) {
         key_type entry = b->entries[i];
