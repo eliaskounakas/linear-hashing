@@ -77,7 +77,7 @@ public:
       hashTable.insert(key);
       return std::make_pair(find(key), true);
     }
-
+    
     return std::make_pair(existingIt, false);
   }
 
@@ -210,9 +210,11 @@ struct ADS_set<Key, N>::Bucket {
   bool erase(key_type key) {
     for (size_type i = 0; i < bucketSize; ++i) {
       if (key_equal{}(entries[i], key)) {
-        for (size_type j = i; j < bucketSize-1; ++j) {
-          entries[j] = entries[j+1];
+        
+        if (i < bucketSize-1) {
+          entries[i] = entries[bucketSize-1];
         }
+        
         bucketSize--;
         return true;
       };
@@ -227,7 +229,10 @@ struct ADS_set<Key, N>::Bucket {
 
   void cleanup() {
     if (nextBucket != nullptr) {
-      if (nextBucket->bucketSize == 0) nextBucket = nullptr;
+      if (nextBucket->bucketSize == 0) {
+        delete nextBucket;
+        nextBucket = nullptr;
+      }
       else nextBucket->cleanup();
     } 
   }

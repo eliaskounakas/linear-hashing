@@ -34,14 +34,19 @@ int main() {
   //   cout << "\n";
   // } 
 
-  for(int i = 0; i < 10; i++) {
+  for(int i = 1; i < 30; i = i *2) {
     vector<int> inpv;
     inpv.push_back(i);
     mySet.insert(inpv.begin(), inpv.end());
   }
 
+  mySet.erase(16);
+  mySet.erase(2);
+
+  auto it = mySet.insert(2).first;
+
   cout << "\n test Iterator: ";
-  for_each(mySet.find(0), mySet.end(), [](const int& number) {
+  for_each(it, mySet.end(), [](const int& number) {
     cout << number << " ";
   });
   cout << "\n";
