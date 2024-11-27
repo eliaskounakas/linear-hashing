@@ -210,11 +210,8 @@ struct ADS_set<Key, N>::Bucket {
   bool erase(key_type key) {
     for (size_type i = 0; i < bucketSize; ++i) {
       if (key_equal{}(entries[i], key)) {
-        
-        if (i < bucketSize-1) {
-          entries[i] = entries[bucketSize-1];
-        }
-        
+        entries[i] = entries[bucketSize-1];
+
         bucketSize--;
         return true;
       };
