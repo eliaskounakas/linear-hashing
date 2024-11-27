@@ -41,7 +41,7 @@ int main() {
   }
 
   cout << "\n test Iterator: ";
-  for_each(mySet.begin(), mySet.end(), [](const int& number) {
+  for_each(mySet.find(0), mySet.end(), [](const int& number) {
     cout << number << " ";
   });
   cout << "\n";

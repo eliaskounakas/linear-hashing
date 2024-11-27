@@ -45,8 +45,17 @@ public:
   ~ADS_set() {}
 
   ADS_set &operator=(const ADS_set &other) {
+    if (this == &other) return *this;
+    ADS_set temp{other};
+    swap(temp);
+    return *this;
   }
-  //ADS_set &operator=(std::initializer_list<key_type> ilist);
+  
+  ADS_set &operator=(std::initializer_list<key_type> ilist) {
+    ADS_set tmp{ilist};
+    swap(tmp);
+    return *this;
+  }
 
   size_type size() const {
     return numOfElements;
@@ -61,7 +70,16 @@ public:
   }                  // PH1
 
 
-  //std::pair<iterator,bool> insert(const key_type &key);
+  std::pair<iterator,bool> insert(const key_type &key) {
+    auto existingIt = find(key);
+
+    if (existingIt == end()) {
+      hashTable.insert(key);
+      return std::make_pair(find(key), true);
+    }
+    
+    return std::make_pair(existingIt, false);
+  }
 
   template<typename InputIt> void insert(InputIt first, InputIt last) {
     for (InputIt it {first}; it != last; it++) {
@@ -79,7 +97,13 @@ public:
 
   size_type erase(const key_type &key) {
     unsigned index = hashTable.getIndex(key);
-    hashTable.buckets[index]->erase(key);
+    bool removedKey = hashTable.buckets[index]->erase(key);
+    if (removedKey) {
+      numOfElements--;
+      hashTable.buckets[index]->cleanup();
+    };
+    
+    return numOfElements;
   };
 
   size_type count(const key_type &key) const {
@@ -91,7 +115,23 @@ public:
     }
     return 0;
   }                       // PH1
-  // iterator find(const key_type &key) const;
+
+  iterator find(const key_type &key) const {
+    size_t x = static_cast<size_t>(hashTable.getIndex(key));
+    size_t y {0};
+
+    for (Bucket* b{hashTable.buckets[x]}; b != nullptr; b = b->nextBucket) {
+      for (size_type i = 0; i < b->bucketSize; ++i) {
+        if (key_equal{}(b->entries[i], key)) {
+          Iterator newIt(hashTable.buckets, hashTable.tableSize, x, y, i);
+          return newIt;
+        }
+      }
+      y++;
+    }
+
+    return this->end();
+  }
 
   void swap(ADS_set &other) {
     std::swap(hashTable, other.hashTable);
@@ -168,26 +208,28 @@ struct ADS_set<Key, N>::Bucket {
   }
 
   bool erase(key_type key) {
-    bool keyFound {false};
-
     for (size_type i = 0; i < bucketSize; ++i) {
       if (key_equal{}(entries[i], key)) {
-        keyFound = true;
         for (size_type j = i; j < bucketSize-1; ++j) {
-          entries[i] = entries[i+1];
+          entries[j] = entries[j+1];
         }
         bucketSize--;
-        numOfElements--;
-        if (bucketSize == 0) return true;
+        return true;
       };
     }
 
-    if (!keyFound && bucketSize == bucketMaxSize && nextBucket != nullptr) {
-      bool isBucketEmpty = nextBucket->erase(key);
-      if (isBucketEmpty) nextBucket = nullptr;
+    if (nextBucket == nullptr) {
+      return false;
+    } else {
+      return nextBucket->erase(key);
     }
+  }
 
-    return false;
+  void cleanup() {
+    if (nextBucket != nullptr) {
+      if (nextBucket->bucketSize == 0) nextBucket == nullptr;
+      else nextBucket->cleanup();
+    } 
   }
 };
 
@@ -332,6 +374,14 @@ public:
     } else {
        ptr = currBucket->entries;
     }
+  }
+
+  Iterator(Bucket** ht, size_t tableSZ, size_t x, size_t y, size_t z): ht{ht}, x{x}, y{y}, z{z}, tableSZ{tableSZ} {
+    this->currBucket = ht[x];
+    for (size_t i {0}; i < y; i++) {
+      this->currBucket = currBucket->nextBucket;
+    }
+    ptr = currBucket->entries+z;
   }
 
   Iterator(): ht{nullptr}, currBucket{nullptr}, x{0}, y{0}, z{0}, tableSZ{0}, ptr{nullptr} {}
