@@ -261,7 +261,7 @@ struct ADS_set<Key, N>::HashTable {
     }
 
     if (!foundKey) {
-      delete newBucket;
+      deleteLinkedBuckets(newBucket);
       return false;
     }
   
