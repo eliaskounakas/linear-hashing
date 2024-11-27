@@ -101,9 +101,10 @@ public:
     if (removedKey) {
       numOfElements--;
       hashTable.buckets[index]->cleanup();
+      return 1;
     };
     
-    return numOfElements;
+    return 0;
   };
 
   size_type count(const key_type &key) const {

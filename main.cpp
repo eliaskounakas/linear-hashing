@@ -55,4 +55,6 @@ int main() {
 
   ADS_set<int, 2> mySecondSet = mySet;
   mySet.clear();
+
+  mySet.dump();
 }
