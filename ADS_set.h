@@ -151,6 +151,8 @@ public:
 
   void dump(std::ostream &o = std::cerr) const {
     for (size_type i{0}; i < hashTable.tableSize; i++) {
+      o << "[size = " << this->size() << "]\n";
+
       std::string index{std::bitset<64>( i ).to_string()};
       if (i < hashTable.nextToSplit || i > hashTable.tableSize - hashTable.nextToSplit - 1) 
         index = index.substr(index.size() - (hashTable.roundNumber + 1));
