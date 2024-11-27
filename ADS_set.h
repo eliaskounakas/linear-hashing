@@ -10,15 +10,15 @@
 template <typename Key, size_t N = 7>
 class ADS_set {
 public:
-  //class /* iterator type (implementation-defined) */;
+  class Iterator;
   using value_type = Key;
   using key_type = Key;
   using reference = value_type &;
   using const_reference = const value_type &;
   using size_type = size_t;
   using difference_type = std::ptrdiff_t;
-  //using const_iterator = /* iterator type */;
-  //using iterator = const_iterator;
+  using const_iterator = Iterator;
+  using iterator = const_iterator;
   //using key_compare = std::less<key_type>;                         // B+-Tree
   using key_equal = std::equal_to<key_type>;                       // Hashing
   using hasher = std::hash<key_type>;                              // Hashing
@@ -28,14 +28,14 @@ private:
   HashTable hashTable;
   size_type numOfElements;
 public:
-  ADS_set(): hashTable{new Bucket*[2]}, numOfElements{0} {
+  ADS_set(): hashTable{new Bucket*[1]}, numOfElements{0} {
     hashTable.buckets[0] = new Bucket;
-    hashTable.buckets[1] = new Bucket;
   }                         // PH1
   ADS_set(std::initializer_list<key_type> ilist): ADS_set{std::begin(ilist),std::end(ilist)} {}                   // PH1
   template<typename InputIt> ADS_set(InputIt first, InputIt last): ADS_set{} {
     insert(first, last);
   }     // PH1
+
   //ADS_set(const ADS_set &other);
 
   //~ADS_set() {}
@@ -83,8 +83,12 @@ public:
 
   // void swap(ADS_set &other);
 
-  // const_iterator begin() const;
-  // const_iterator end() const;
+  const_iterator begin() const {
+    return const_iterator{hashTable.buckets, hashTable.tableSize};
+  };
+  const_iterator end() const {
+    return const_iterator{};
+  };
 
   void dump(std::ostream &o = std::cerr) const {
     for (size_type i{0}; i < hashTable.tableSize; i++) {
@@ -139,8 +143,8 @@ struct ADS_set<Key, N>::Bucket {
 template <typename Key, size_t N>
 struct ADS_set<Key, N>::HashTable {
   Bucket** buckets{nullptr};
-  size_type tableSize{2};
-  size_type roundNumber{1};
+  size_type tableSize{1};
+  size_type roundNumber{0};
   size_type nextToSplit{0};
 
   void deleteLinkedBuckets(Bucket* currentBucket) {
@@ -175,6 +179,7 @@ struct ADS_set<Key, N>::HashTable {
     for (size_type i{0}; i < tableSize; i++) {
       newBuckets[i] = buckets[i];
     }
+    
     newBuckets[tableSize] = new Bucket;
     tableSize++;
     delete[] buckets;
@@ -222,29 +227,92 @@ struct ADS_set<Key, N>::HashTable {
 
 
 
-#if 0
+
 template <typename Key, size_t N>
-class ADS_set<Key,N>::/* iterator type */ {
+class ADS_set<Key,N>::Iterator {
 public:
   using value_type = Key;
   using difference_type = std::ptrdiff_t;
   using reference = const value_type &;
   using pointer = const value_type *;
   using iterator_category = std::forward_iterator_tag;
+private:
+  Bucket** ht;
+  Bucket* currBucket;
+  size_type x, y, z, tableSZ;
+  pointer ptr;
 
-  explicit /* iterator type */(/* implementation-dependent */);
-  reference operator*() const;
-  pointer operator->() const;
-  /* iterator type */ &operator++();
-  /* iterator type */ operator++(int);
-  friend bool operator==(const /* iterator type */ &lhs, const /* iterator type */ &rhs);
-  friend bool operator!=(const /* iterator type */ &lhs, const /* iterator type */ &rhs);
+  void skip() {
+    if (++z >= currBucket->bucketSize) {
+      z = 0;
+
+      if (currBucket->nextBucket == nullptr) {
+        y = 0;
+        ++x;
+
+        if (x >= tableSZ) {
+          ptr = nullptr;
+          return;
+        }
+
+      } else {
+        ++y;
+      }
+
+      currBucket = ht[x];
+      for (size_t i {0}; i < y; i++) {
+        currBucket = currBucket->nextBucket;
+      }
+
+      if (currBucket->bucketSize == 0) {
+        skip();
+      } else {
+        ptr = currBucket->entries;
+      }
+    }
+  }
+
+public:
+  explicit Iterator(Bucket** ht, size_t tableSZ): ht{ht}, x{0}, y{0}, z{0}, tableSZ{tableSZ} {
+    this->currBucket = ht[0];
+    if (this->currBucket->bucketSize == 0) {
+      skip();
+    } else {
+       ptr = currBucket->entries;
+    }
+  }
+
+  Iterator(): ht{nullptr}, currBucket{nullptr}, x{0}, y{0}, z{0}, tableSZ{0}, ptr{nullptr} {}
+
+  reference operator*() const {
+    return *ptr;
+  };
+
+  pointer operator->() const {
+    return ptr;
+  };
+  Iterator &operator++() {
+    ++ptr;
+    skip();
+    return *this;
+  };
+  Iterator operator++(int) {
+    Iterator temp {*this};
+    ++*this;
+    return temp;
+  };
+  friend bool operator==(const Iterator &lhs, const Iterator &rhs) {
+    return lhs.ptr == rhs.ptr;
+  };
+  friend bool operator!=(const Iterator &lhs, const Iterator &rhs) {
+    return !(lhs == rhs);
+  };
 };
 
 
 template <typename Key, size_t N>
 void swap(ADS_set<Key,N> &lhs, ADS_set<Key,N> &rhs) { lhs.swap(rhs); }
+
 #endif
 
-#endif // ADS_SET_H
 
