@@ -28,7 +28,7 @@ private:
   HashTable hashTable;
   size_type numOfElements;
 public:
-  ADS_set(): hashTable{new Bucket*[4]}, numOfElements{0} {
+  ADS_set(): hashTable{new Bucket*[2]}, numOfElements{0} {
     hashTable.buckets[0] = new Bucket;
     hashTable.buckets[1] = new Bucket;
   }                         // PH1
@@ -98,8 +98,7 @@ public:
   }
 
   size_type erase(const key_type &key) {
-    bool removedKey = hashTable.erase(key);
-    if (removedKey) {
+    if (hashTable.erase(key)) {
       numOfElements--;
       return 1;
     };
@@ -115,7 +114,7 @@ public:
       }
     }
     return 0;
-  }                       // PH1
+  }                      
 
   iterator find(const key_type &key) const {
     size_t x = static_cast<size_t>(hashTable.getIndex(key));
@@ -151,12 +150,6 @@ public:
   };
 
   void dump(std::ostream &o = std::cerr) const {
-    o << "[size = " << this->size() << "]\n";
-    o << "[table_size = " << hashTable.tableSize << "]\n";
-    o << "[round_number = " << hashTable.roundNumber << "]\n";
-    o << "[nextToSplit = " << hashTable.nextToSplit << "]\n";
-    o << "[maxSize = " << hashTable.maxSize<< "]\n";
-
     for (size_type i{0}; i < hashTable.tableSize; i++) {
 
       std::string index{std::bitset<64>( i ).to_string()};
@@ -194,8 +187,6 @@ public:
   }
 };
 
-
-
 template <typename Key, size_t N>
 struct ADS_set<Key, N>::Bucket {
   size_type bucketSize{0};
@@ -205,16 +196,10 @@ struct ADS_set<Key, N>::Bucket {
 
   bool append(key_type key) {
     if (bucketSize == bucketMaxSize) {
-      if (nextBucket != nullptr) {
-        Bucket* b = nextBucket;
-        while (b->nextBucket != nullptr) {
-          b = b->nextBucket;
-        }
-        return b->append(key);
-      };
+      if (nextBucket != nullptr) return nextBucket->append(key);
 
       nextBucket = new Bucket;
-      (*nextBucket).append(key);
+      nextBucket->append(key);
       return true;
     }
 
@@ -229,7 +214,7 @@ template <typename Key, size_t N>
 struct ADS_set<Key, N>::HashTable {
   Bucket** buckets{nullptr};
   size_type tableSize{2};
-  size_type maxSize{4};
+  size_type maxSize{2};
   size_type roundNumber{1};
   size_type nextToSplit{0};
 
