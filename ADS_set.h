@@ -91,7 +91,6 @@ public:
   }
 
   void clear() {
-    hashTable.~HashTable();
     ADS_set temp;
     this->swap(temp);
   }

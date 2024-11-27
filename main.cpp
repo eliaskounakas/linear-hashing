@@ -54,4 +54,5 @@ int main() {
   mySet.dump();
 
   ADS_set<int, 2> mySecondSet = mySet;
+  mySet.clear();
 }
