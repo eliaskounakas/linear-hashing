@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <bitset>
 
-template <typename Key, size_t N = 7>
+template <typename Key, size_t N = 16>
 class ADS_set {
 public:
   class Iterator;
@@ -246,29 +246,19 @@ struct ADS_set<Key, N>::HashTable {
   }
 
   bool erase(key_type key) {
-    bool foundKey {false};
     unsigned index = getIndex(key);
 
-    Bucket* newBucket = new Bucket;
     for (Bucket* b{buckets[index]}; b != nullptr; b = b->nextBucket) {
       for (size_type i = 0; i < b->bucketSize; ++i) {
         if (key_equal{}(b->entries[i], key)) {
-          foundKey = true;
-        } else {  
-          newBucket->append(b->entries[i]);
+          b->entries[i] = b->entries[b->bucketSize-1];
+          b->bucketSize--;
+          return true;
         }
       }
     }
 
-    if (!foundKey) {
-      deleteLinkedBuckets(newBucket);
-      return false;
-    }
-  
-    deleteLinkedBuckets(buckets[index]);
-    buckets[index] = newBucket;
-
-    return true;
+    return false;
   }
 
   void split() {
@@ -286,7 +276,6 @@ struct ADS_set<Key, N>::HashTable {
 
     buckets[tableSize] = new Bucket;
     tableSize++;
-    Bucket* oldBucket = new Bucket;
     nextToSplit++;
 
     for (Bucket* b{buckets[nextToSplit-1]}; b != nullptr; b = b->nextBucket) {
@@ -294,17 +283,14 @@ struct ADS_set<Key, N>::HashTable {
         key_type entry = b->entries[i];
         unsigned index = getIndex(entry);
 
-        if (index == nextToSplit-1) {
-          oldBucket->append(entry);
-        } else {
+        if (index != nextToSplit-1) {
           buckets[index]->append(entry);
+          b->entries[i] = b->entries[b->bucketSize-1];
+          b->bucketSize--;
+          i--;
         }
       }
     }
-
-    deleteLinkedBuckets(buckets[nextToSplit-1]);
-    buckets[nextToSplit-1] = oldBucket;
-
 
     if(nextToSplit == static_cast<size_type>(1 << roundNumber)) { 
       roundNumber++; 
