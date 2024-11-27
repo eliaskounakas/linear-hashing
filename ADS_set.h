@@ -91,6 +91,7 @@ public:
   }
 
   void clear() {
+    hashTable.~HashTable();
     ADS_set temp;
     this->swap(temp);
   }
@@ -134,7 +135,10 @@ public:
   }
 
   void swap(ADS_set &other) {
-    std::swap(hashTable, other.hashTable);
+    std::swap(hashTable.buckets, other.hashTable.buckets);
+    std::swap(hashTable.nextToSplit, other.hashTable.nextToSplit);
+    std::swap(hashTable.roundNumber, other.hashTable.roundNumber);
+    std::swap(hashTable.tableSize, other.hashTable.tableSize);
     std::swap(numOfElements, other.numOfElements);
   }
 

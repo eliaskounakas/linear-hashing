@@ -52,4 +52,6 @@ int main() {
   cout << "\n";
 
   mySet.dump();
+
+  ADS_set<int, 2> mySecondSet = mySet;
 }
