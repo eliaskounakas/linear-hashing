@@ -40,21 +40,12 @@ int main() {
     mySet.insert(inpv.begin(), inpv.end());
   }
 
-  mySet.erase(16);
-  mySet.erase(2);
-
-  auto it = mySet.insert(2).first;
-
-  cout << "\n test Iterator: ";
-  for_each(it, mySet.end(), [](const int& number) {
+  cout << "\nTest Iterator: ";
+  for_each(mySet.begin(), mySet.end(), [](const int& number) {
     cout << number << " ";
   });
-  cout << "\n";
+  cout << "\n\n";
 
-  mySet.dump();
-
-  ADS_set<int, 2> mySecondSet = mySet;
-  mySet.clear();
-
+  mySet.erase(8);
   mySet.dump();
 }

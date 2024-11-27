@@ -97,7 +97,7 @@ public:
 
   size_type erase(const key_type &key) {
     unsigned index = hashTable.getIndex(key);
-    bool removedKey = hashTable.buckets[index]->erase(key);
+    bool removedKey = hashTable.erase(key);
     if (removedKey) {
       numOfElements--;
       hashTable.buckets[index]->cleanup();
@@ -150,8 +150,8 @@ public:
   };
 
   void dump(std::ostream &o = std::cerr) const {
+    o << "[size = " << this->size() << "]\n";
     for (size_type i{0}; i < hashTable.tableSize; i++) {
-      o << "[size = " << this->size() << "]\n";
 
       std::string index{std::bitset<64>( i ).to_string()};
       if (i < hashTable.nextToSplit || i > hashTable.tableSize - hashTable.nextToSplit - 1) 
@@ -213,23 +213,6 @@ struct ADS_set<Key, N>::Bucket {
     return false;
   }
 
-  bool erase(key_type key) {
-    for (size_type i = 0; i < bucketSize; ++i) {
-      if (key_equal{}(entries[i], key)) {
-        entries[i] = entries[bucketSize-1];
-
-        bucketSize--;
-        return true;
-      };
-    }
-
-    if (nextBucket == nullptr) {
-      return false;
-    } else {
-      return nextBucket->erase(key);
-    }
-  }
-
   void cleanup() {
     if (nextBucket != nullptr) {
       if (nextBucket->bucketSize == 0) {
@@ -274,6 +257,45 @@ struct ADS_set<Key, N>::HashTable {
       unsigned index = getIndex(key);
       bool overflow = buckets[index]->append(key);
       if (overflow) split();
+  }
+
+  bool erase(key_type key) {
+    size_type rowEntries{0};
+    bool foundKey {false};
+    unsigned index = getIndex(key);
+    for (Bucket* b{buckets[index]}; b != nullptr; b = b->nextBucket) {
+      rowEntries += b->bucketSize;
+    }
+
+    key_type* row = new key_type[rowEntries];
+    size_type count{0};
+
+    for (Bucket* b{buckets[index]}; b != nullptr; b = b->nextBucket) {
+      for (size_type i = 0; i < b->bucketSize; ++i) {
+        if (key_equal{}(b->entries[i], key)) foundKey = true;
+        row[count] = b->entries[i];
+        count++;
+      }
+    }
+
+    if (!foundKey) {
+      delete[] row;
+      return false;
+    }
+
+    Bucket* newBucket = new Bucket;
+
+    for (size_type i = 0; i < rowEntries; ++i) {
+      if (key_equal{}(row[i], key)) continue;
+      else newBucket->append(row[i]); 
+    }
+  
+    deleteLinkedBuckets(buckets[index]);
+    delete[] row;
+
+    buckets[index] = newBucket;
+
+    return true;
   }
 
   void split() {
