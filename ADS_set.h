@@ -96,7 +96,6 @@ public:
   }
 
   size_type erase(const key_type &key) {
-    unsigned index = hashTable.getIndex(key);
     bool removedKey = hashTable.erase(key);
     if (removedKey) {
       numOfElements--;
