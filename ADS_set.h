@@ -100,7 +100,6 @@ public:
     bool removedKey = hashTable.erase(key);
     if (removedKey) {
       numOfElements--;
-      hashTable.buckets[index]->cleanup();
       return 1;
     };
     
@@ -211,16 +210,6 @@ struct ADS_set<Key, N>::Bucket {
     entries[bucketSize] = key;
     bucketSize++;
     return false;
-  }
-
-  void cleanup() {
-    if (nextBucket != nullptr) {
-      if (nextBucket->bucketSize == 0) {
-        delete nextBucket;
-        nextBucket = nullptr;
-      }
-      else nextBucket->cleanup();
-    } 
   }
 };
 
