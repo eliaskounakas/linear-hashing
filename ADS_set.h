@@ -31,16 +31,21 @@ public:
   ADS_set(): hashTable{new Bucket*[1]}, numOfElements{0} {
     hashTable.buckets[0] = new Bucket;
   }                         // PH1
+
   ADS_set(std::initializer_list<key_type> ilist): ADS_set{std::begin(ilist),std::end(ilist)} {}                   // PH1
-  template<typename InputIt> ADS_set(InputIt first, InputIt last): ADS_set{} {
+
+  template<typename InputIt> 
+  ADS_set(InputIt first, InputIt last): ADS_set{} {
     insert(first, last);
   }     // PH1
 
-  //ADS_set(const ADS_set &other);
+  ADS_set(const ADS_set &other): ADS_set(other.begin(), other.end()) {
+  }
 
-  //~ADS_set() {}
+  ~ADS_set() {}
 
-  //ADS_set &operator=(const ADS_set &other);
+  ADS_set &operator=(const ADS_set &other) {
+  }
   //ADS_set &operator=(std::initializer_list<key_type> ilist);
 
   size_type size() const {
@@ -67,8 +72,15 @@ public:
     }
   }
 
-  // void clear();
-  // size_type erase(const key_type &key);
+  void clear() {
+    ADS_set temp;
+    this->swap(temp);
+  }
+
+  size_type erase(const key_type &key) {
+    unsigned index = hashTable.getIndex(key);
+    hashTable.buckets[index]->erase(key);
+  };
 
   size_type count(const key_type &key) const {
     unsigned index = hashTable.getIndex(key);
@@ -81,7 +93,10 @@ public:
   }                       // PH1
   // iterator find(const key_type &key) const;
 
-  // void swap(ADS_set &other);
+  void swap(ADS_set &other) {
+    std::swap(hashTable, other.hashTable);
+    std::swap(numOfElements, other.numOfElements);
+  }
 
   const_iterator begin() const {
     return const_iterator{hashTable.buckets, hashTable.tableSize};
@@ -111,8 +126,22 @@ public:
     }
   }
 
-  // friend bool operator==(const ADS_set &lhs, const ADS_set &rhs);
-  // friend bool operator!=(const ADS_set &lhs, const ADS_set &rhs);
+  friend bool operator==(const ADS_set &lhs, const ADS_set &rhs) {
+    if (lhs.numOfElements != rhs.numOfElements) return false;
+    bool elementNotFound {false};
+    for (const auto& key : lhs) {
+      if (!rhs.count(key)) {
+        elementNotFound = true;
+        return false;
+      }
+      return true;
+    };
+    return elementNotFound;
+  }
+
+  friend bool operator!=(const ADS_set &lhs, const ADS_set &rhs) {
+    return !(lhs == rhs);
+  }
 };
 
 
@@ -135,6 +164,29 @@ struct ADS_set<Key, N>::Bucket {
 
     entries[bucketSize] = key;
     bucketSize++;
+    return false;
+  }
+
+  bool erase(key_type key) {
+    bool keyFound {false};
+
+    for (size_type i = 0; i < bucketSize; ++i) {
+      if (key_equal{}(entries[i], key)) {
+        keyFound = true;
+        for (size_type j = i; j < bucketSize-1; ++j) {
+          entries[i] = entries[i+1];
+        }
+        bucketSize--;
+        numOfElements--;
+        if (bucketSize == 0) return true;
+      };
+    }
+
+    if (!keyFound && bucketSize == bucketMaxSize && nextBucket != nullptr) {
+      bool isBucketEmpty = nextBucket->erase(key);
+      if (isBucketEmpty) nextBucket = nullptr;
+    }
+
     return false;
   }
 };
