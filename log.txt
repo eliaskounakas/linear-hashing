@@ -276192,22 +276192,22 @@ cl
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 === stresstest1 ===
-elapsed_insert = 162.521 ms
-elapsed_count  = 11.4651 ms
+elapsed_insert = 159.93 ms
+elapsed_count  = 11.8808 ms
 
 === stresstest2 ===
-elapsed_insert = 145.165 ms
-elapsed_count  = 11.9496 ms
-elapsed_find   = 16.8427 ms
-elapsed_iter   = 31.4438 ms
-elapsed_erase  = 16.9593 ms
+elapsed_insert = 139.214 ms
+elapsed_count  = 12.286 ms
+elapsed_find   = 16.4352 ms
+elapsed_iter   = 30.537 ms
+elapsed_erase  = 13.5224 ms
 
 === stresstest1 (randomized) ===
-elapsed_insert = 462.437 ms
-elapsed_count  = 94.1873 ms
+elapsed_insert = 425.01 ms
+elapsed_count  = 83.7622 ms
 
 === stresstest2 (randomized) ===
-elapsed_insert = 511.046 ms
-elapsed_count  = 89.6343 ms
-elapsed_find   = 121.479 ms
-elapsed_erase  = 188.775 ms
+elapsed_insert = 455.752 ms
+elapsed_count  = 86.9649 ms
+elapsed_find   = 121.43 ms
+elapsed_erase  = 183.31 ms

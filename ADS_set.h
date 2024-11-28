@@ -212,16 +212,22 @@ struct ADS_set<Key, N>::Bucket {
   Bucket* nextBucket{nullptr};
 
   bool append(key_type key) {
-    if (bucketSize == N) {
-      if (nextBucket != nullptr) return nextBucket->append(key);
+    Bucket* curr = this;
 
-      nextBucket = new Bucket;
-      nextBucket->append(key);
-      return true;
+    while (curr->bucketSize == N) {
+      if (curr->nextBucket == nullptr) {
+        curr->nextBucket = new Bucket;
+        curr = curr->nextBucket;
+        curr->entries[0] = key;
+        curr->bucketSize++;
+        return true;
+      }
+
+      curr = curr->nextBucket;
     }
 
-    entries[bucketSize] = key;
-    bucketSize++;
+    curr->entries[curr->bucketSize] = key;
+    curr->bucketSize++;
     return false;
   }
 };
@@ -241,16 +247,9 @@ struct ADS_set<Key, N>::HashTable {
     delete currentBucket;
   }
 
-  unsigned getLastNBits(key_type key, size_type n) const {
-    unsigned hashedValue = static_cast<unsigned>(hasher{}(key));
-    unsigned mask = (1 << n) - 1;
-    unsigned last_n_bits = hashedValue & mask;
-    return last_n_bits;
-  }
-
   unsigned getIndex(const key_type& key) const {
-    unsigned index = getLastNBits(key, roundNumber);
-    if (index < nextToSplit) index = getLastNBits(key, roundNumber+1);
+    unsigned index = static_cast<unsigned>(hasher{}(key)) & ((1u << roundNumber) - 1);
+    if (index < nextToSplit) index = static_cast<unsigned>(hasher{}(key)) & ((1u << (roundNumber+1)) - 1);;
     return index;
   }
 
@@ -421,5 +420,3 @@ template <typename Key, size_t N>
 void swap(ADS_set<Key,N> &lhs, ADS_set<Key,N> &rhs) { lhs.swap(rhs); }
 
 #endif
-
-
