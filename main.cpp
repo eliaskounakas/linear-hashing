@@ -7,8 +7,6 @@
 using namespace std;
 
 int main() {
-
-  ADS_set<int, 2> mySet;
   
 
   // while (true) {
@@ -37,11 +35,12 @@ int main() {
   //   cout << "\n";
   // } 
 
-  for(int i = 1; i < 50; i++) {
+  ADS_set<int, 3> mySet;
+
+  for(int i = 1; i < 500; i++) {
     vector<int> inpv;
     inpv.push_back(i);
     mySet.insert(inpv.begin(), inpv.end());
-
   }
 
   cout << "\nTest Iterator: ";
@@ -51,5 +50,5 @@ int main() {
   cout << "\n\n";
 
 
-  mySet.dump();
+  // mySet.dump();
 }

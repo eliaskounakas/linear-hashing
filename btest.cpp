@@ -490,10 +490,10 @@ void test_initlist_constructor3(size_t n, size_t max_value, RNG& gen) {
     std::cerr << "ii ";
     for(size_t i = 0; i < n; ++i) {
         val_t v{ dist(gen) };
-        std::cerr << v << ' ';
+        std::cerr << v << " YEP";
         vs.push_back(v);
     }
-    std::cerr << '\n';
+    std::cerr << "\nREEE";
 
     a.insert(vs.begin(), vs.end());
     r.insert(vs.begin(), vs.end());
