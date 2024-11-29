@@ -301,7 +301,7 @@ struct ADS_set<Key, N>::HashTable {
       for (size_type i = 0; i < b->bucketSize; ++i) {
         unsigned index = getIndex(b->entries[i]);
 
-        if (index != nextToSplit-1) {
+        if (index == nextToSplit-1) {
           newBucket->append(b->entries[i]);
         } else {
           buckets[index]->append(b->entries[i]);
