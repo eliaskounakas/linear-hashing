@@ -37,10 +37,11 @@ int main() {
 
   ADS_set<int, 3> mySet;
 
-  for(int i = 1; i < 500; i++) {
+  for(int i = 1; i < 10; i++) {
     vector<int> inpv;
     inpv.push_back(i);
     mySet.insert(inpv.begin(), inpv.end());
+    mySet.dump();
   }
 
   cout << "\nTest Iterator: ";
